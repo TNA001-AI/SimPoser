@@ -1,0 +1,42 @@
+<mujoco model="so_arm100 scene">
+  <compiler meshdir="assets" texturedir="assets"/>
+  <include file="so_arm100.xml"/>
+
+  <statistic center="0.2 0 0.1" extent="0.4"/>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="140" elevation="-30"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <!-- Table dimensions (length x width x height in meters): 1.21x0.76x0.75 -->
+    <mesh file="tablelegs.obj"/>
+    <mesh file="tabletop.obj"/>
+    <texture type="2d" file="small_meta_table_diffuse.png"/>
+    <material name="table" texture="small_meta_table_diffuse"/>
+  </asset>
+
+  <worldbody>
+    <site name="world_x_axis" pos="0.1 0 0" size="0.005" rgba="1 0 0 1" type="sphere"/>
+    <site name="world_y_axis" pos="0 0.1 0" size="0.005" rgba="0 1 0 1" type="sphere"/>
+    <site name="world_z_axis" pos="0 0 0.1" size="0.005" rgba="0 0 1 1" type="sphere"/>
+    <site name="world_origin" pos="0 0 0" size="0.008" rgba="1 1 0 0.6" type="sphere"/>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="2 2 0.05" type="plane" material="groundplane" pos="0 0 -.75"/>
+    <site name="worldref" pos="0 0 -0.75"/>
+    <!-- <geom name="table" type="box" size="0.4 0.4 0.01" pos="0 0 0.425" rgba="0.6 0.4 0.3 1"/> -->
+    <geom mesh="tabletop" material="table" class="visual" pos="0.25 0 -0.75" />
+    <geom mesh="tablelegs" material="table" class="visual" pos="0.25 0 -0.75"/>
+    <geom name="table" pos="0.25 0 -0.1009" size="0.61 0.37 0.1" type="box" class="collision"/>
+    <!-- camera -->
+    <camera name="top_view" pos="0.25 0 0.5" xyaxes="0 -1 0 1 0 0" mode="fixed"/>
+    <camera name="front_view" pos="0.8 0 0.1" xyaxes="0 1 0 0 0 1" mode="fixed"/>
+    <camera name="main_cam" pos="0.751 -0.399 0.516" xyaxes="0.548 0.836 -0.000 -0.345 0.226 0.911"/>
+  </worldbody>
+</mujoco>
