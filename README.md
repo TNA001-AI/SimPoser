@@ -2,7 +2,7 @@
 
 To run the project, please follow the below steps:
 
-Windows:
+Ubuntu:
 
 ```
 conda create -n simposer python=3.13 numpy matplotlib
