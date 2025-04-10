@@ -15,7 +15,7 @@ pip install "mink[examples]"
 
 conda activate simposer
 cd simposer
-pyhton ./script/IK.py
+python ./script/test_mink.py
 ```
 
 macOS:
