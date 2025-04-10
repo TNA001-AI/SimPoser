@@ -123,7 +123,7 @@ jacr = np.zeros((3, model.nv))  # rotation
 
 # Set target (goal) and end-effector
 end_effector_id = model.body('Fixed_Jaw').id
-goal = np.array([0.1385675, 0.06670183, 0.35506766])
+goal = np.array([0.30, 0.0, 0.35])
 error = goal - data.body(end_effector_id).xpos.copy()
 
 def check_joint_limits(q):
@@ -145,18 +145,18 @@ writer = imageio.get_writer(VIDEO_PATH, fps=FRAMERATE)
 
 # Launch viewer
 with viewer.launch_passive(model, data) as v:
-    while data.time < DURATION:
-        # Compute error
-        error = goal - data.body(end_effector_id).xpos
+    render_interval = 1.0 / FRAMERATE
+    next_frame_time = 0.0
 
+    while data.time < DURATION:
+        # 控制器逻辑
+        error = goal - data.body(end_effector_id).xpos
         if np.linalg.norm(error) >= tol:
-            # Compute Jacobian
             mujoco.mj_jac(model, data, jacp, jacr, goal, end_effector_id)
             n = jacp.shape[1]
             I = np.identity(n)
             product = jacp.T @ jacp + damping * I
 
-            # Compute pseudo-inverse
             if np.isclose(np.linalg.det(product), 0):
                 j_inv = np.linalg.pinv(product) @ jacp.T
             else:
@@ -171,13 +171,15 @@ with viewer.launch_passive(model, data) as v:
         # Step simulation
         mujoco.mj_step(model, data)
 
-        # Render high-res frame and save to video
-        renderer.update_scene(data, camera)
-        frame = renderer.render()
-        writer.append_data(frame)
+        # 渲染帧控制
+        if data.time >= next_frame_time:
+            renderer.update_scene(data, camera)
+            frame = renderer.render()
+            writer.append_data(frame)
+            next_frame_time += render_interval
 
-        # Sync viewer
         v.sync()
+
 
 # Cleanup
 writer.close()
