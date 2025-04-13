@@ -80,7 +80,7 @@ if __name__ == "__main__":
         initial_T = end_effector_task.transform_target_to_world
         rotation_matrix = initial_T.as_matrix()[:3, :3]
 
-        rate = RateLimiter(frequency=500.0, warn=False)
+        rate = RateLimiter(frequency=50.0, warn=False)
         dt = rate.period
 
         while viewer.is_running():
@@ -113,10 +113,11 @@ if __name__ == "__main__":
             viewer.sync()
             rate.sleep()
 
-            # Print current end-effector position
-            # Use data.qpos to sync with the viewer
-            configuration.update(data.qpos)
-            current_T = configuration.get_transform_frame_to_world("gripper_site", "site")
-            current_pos = current_T.translation()
-            print(f"Current end-effector position: x={current_pos[0]:.4f}, y={current_pos[1]:.4f}, z={current_pos[2]:.4f}")
-
+            # # Print current end-effector position
+            # # Use data.qpos to sync with the viewer
+            # configuration.update(data.qpos)
+            # current_T = configuration.get_transform_frame_to_world("gripper_site", "site")
+            # current_pos = current_T.translation()
+            # rotation_matrix = current_T.rotation().as_matrix()
+            # print("Current orientation (rotation matrix):\n", rotation_matrix)
+            # # print(f"Current end-effector position: x={current_pos[0]:.4f}, y={current_pos[1]:.4f}, z={current_pos[2]:.4f}")
