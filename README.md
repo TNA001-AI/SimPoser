@@ -15,7 +15,7 @@ pip install "mink[examples]"
 
 conda activate simposer
 cd simposer
-python ./script/test_mink.py
+python ./script/pick_and_place_video.py
 ```
 
 macOS:
