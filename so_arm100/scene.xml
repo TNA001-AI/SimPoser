@@ -23,9 +23,9 @@
   </asset>
 
   <worldbody>
-    <site name="world_x_axis" pos="0.1 0 0" size="0.005" rgba="1 0 0 1" type="sphere"/>
-    <site name="world_y_axis" pos="0 0.1 0" size="0.005" rgba="0 1 0 1" type="sphere"/>
-    <site name="world_z_axis" pos="0 0 0.1" size="0.005" rgba="0 0 1 1" type="sphere"/>
+    <site name="world_x_axis" pos="0.1 0 0" size="0.001" rgba="1 0 0 1" type="sphere"/>
+    <site name="world_y_axis" pos="0 0.1 0" size="0.001" rgba="0 1 0 1" type="sphere"/>
+    <site name="world_z_axis" pos="0 0 0.1" size="0.001" rgba="0 0 1 1" type="sphere"/>
     <site name="world_origin" pos="0 0 0" size="0.008" rgba="1 1 0 0.6" type="sphere"/>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="2 2 0.05" type="plane" material="groundplane" pos="0 0 -.75"/>

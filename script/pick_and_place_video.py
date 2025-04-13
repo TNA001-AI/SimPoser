@@ -1,25 +1,55 @@
-from dataclasses import dataclass
+import warnings
+
+warnings.filterwarnings("ignore", message="Converted P to scipy.sparse.csc.csc_matrix")
+warnings.filterwarnings("ignore", message="Converted G to scipy.sparse.csc.csc_matrix")
+
+import os
 import numpy as np
 import mujoco
 import mujoco.viewer
-from dm_control.viewer import user_input
+import imageio
+from dataclasses import dataclass
 from loop_rate_limiters import RateLimiter
 import mink
+from dm_control.viewer import user_input
 
 _XML = "so_arm100/scene.xml"
 open_gripper = 0.3
 close_gripper = -0.0
+RENDER_WIDTH, RENDER_HEIGHT = 640, 480
+CAMERA_NAMES = ["top_view", "front_view", "main_cam"]
+FPS = 50
+VIDEO_DIR = "recordings"
+os.makedirs(VIDEO_DIR, exist_ok=True)
 
 @dataclass
 class KeyCallback:
     pause: bool = False
+    exit: bool = False
 
     def __call__(self, key: int) -> None:
         if key == user_input.KEY_SPACE:
             self.pause = not self.pause
+        elif key == user_input.KEY_Q:
+            self.exit = True
+
+
 
 if __name__ == "__main__":
     model = mujoco.MjModel.from_xml_path(_XML)
+    renderer = mujoco.Renderer(model, RENDER_WIDTH, RENDER_HEIGHT)
+    cameras = {}
+    for name in CAMERA_NAMES:
+        cam = mujoco.MjvCamera()
+        cam.type = mujoco.mjtCamera.mjCAMERA_FIXED
+        cam.fixedcamid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
+        cameras[name] = cam
+
+    writers = {}
+    for name in CAMERA_NAMES:
+        video_path = f"{VIDEO_DIR}/{name}.mp4"
+        writers[name] = imageio.get_writer(video_path, fps=FPS)
+
     data = mujoco.MjData(model)
 
     joint_names = [
@@ -196,8 +226,19 @@ if __name__ == "__main__":
             if not key_callback.pause:
                 data.ctrl[actuator_ids] = configuration.q[dof_ids]
                 mujoco.mj_step(model, data)
+                for name, cam in cameras.items():
+                    renderer.update_scene(data, cam)
+                    frame = renderer.render()
+                    writers[name].append_data(frame)
             else:
                 mujoco.mj_forward(model, data)
 
             viewer.sync()
             rate.sleep()
+            if key_callback.exit:
+                break
+
+for writer in writers.values():
+    writer.close()
+renderer.close()
+print(f"✅ Saved 3 videos to {VIDEO_DIR}")
