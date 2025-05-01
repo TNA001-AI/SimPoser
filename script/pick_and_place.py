@@ -75,14 +75,14 @@ if __name__ == "__main__":
         mujoco.mj_forward(model, data)
 
  
-        object_pos = np.random.uniform(low=[0.2, -0.1, 0.03], high=[0.3, 0.1, 0.03])
+        object_pos = np.random.uniform(low=[0.2, -0.1, 0.01], high=[0.3, 0.1, 0.01])
         data.qpos[object_qpos_id : object_qpos_id + 7] = np.concatenate([object_pos, [1, 0, 0, 0]])
         mujoco.mj_forward(model, data)
 
         place_pos = np.array([0.3, 0.0, 0.03])
         data.site_xpos[place_site_id] = place_pos
 
-        grasp_height = 0.02
+        grasp_height = 0.018
         lift_height = 0.15
         stage = "approach"
 
@@ -184,15 +184,17 @@ if __name__ == "__main__":
             ]))
             end_effector_task.set_target(T_goal)
 
-            for _ in range(8):
-                vel = mink.solve_ik(configuration, [*tasks, damping_task], dt, "osqp", 1e-5)
-                configuration.integrate_inplace(vel, dt)
+            # for _ in range(8):
+            #     vel = mink.solve_ik(configuration, [*tasks, damping_task], dt, "osqp", 1e-5)
+            #     configuration.integrate_inplace(vel, dt)
 
-                err = end_effector_task.compute_error(configuration)
-                # print("Position error:", np.linalg.norm(err[:3]), "Orientation error:", np.linalg.norm(err[3:]))
-                if np.linalg.norm(err[:3]) < 1e-5:
-                    break
-
+            #     err = end_effector_task.compute_error(configuration)
+            #     print("Position error:", np.linalg.norm(err[:3]), "Orientation error:", np.linalg.norm(err[3:]))
+            #     if np.linalg.norm(err[:3]) < 1e-5:
+            #         break
+            vel = mink.solve_ik(configuration, [*tasks, damping_task], dt, "osqp", 1e-5)
+            configuration.integrate_inplace(vel, dt)
+            
             if not key_callback.pause:
                 data.ctrl[actuator_ids] = configuration.q[dof_ids]
                 mujoco.mj_step(model, data)
