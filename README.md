@@ -20,9 +20,9 @@ python ./script/pick_and_place_video.py
 
 macOS:
 ```
-conda create -n simposer python=3.13 numpy matplotlib
+conda create -n simposer python=3.13
 conda activate simposer
-pip install "imageio[ffmpeg]" mujoco
+pip install requirements.txt
 
 cd simposer
 mjpython ./script/IK.py 
