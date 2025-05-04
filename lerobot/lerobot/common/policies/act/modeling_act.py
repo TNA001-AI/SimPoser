@@ -62,7 +62,7 @@ class ACTPolicy(PreTrainedPolicy):
         super().__init__(config)
         config.validate_features()
         self.config = config
-
+        # print("dataset_stats:",dataset_stats)
         self.normalize_inputs = Normalize(config.input_features, config.normalization_mapping, dataset_stats)
         self.normalize_targets = Normalize(
             config.output_features, config.normalization_mapping, dataset_stats
@@ -115,7 +115,7 @@ class ACTPolicy(PreTrainedPolicy):
         queue is empty.
         """
         self.eval()
-
+        # print(batch)
         batch = self.normalize_inputs(batch)
         if self.config.image_features:
             batch = dict(batch)  # shallow copy so that adding a key doesn't modify the original

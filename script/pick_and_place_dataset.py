@@ -14,15 +14,7 @@ from lerobot.common.robot_devices.control_configs import (
     TeleoperateControlConfig,
 )
 from lerobot.common.robot_devices.control_utils import (
-    control_loop,
-    init_keyboard_listener,
-    log_control_info,
-    record_episode,
-    reset_environment,
     sanity_check_dataset_name,
-    sanity_check_dataset_robot_compatibility,
-    stop_recording,
-    warmup_record,
 )
 from lerobot.common.robot_devices.robots.configs import So100RobotConfig
 from lerobot.common.robot_devices.robots.utils import Robot, make_robot_from_config
@@ -30,17 +22,17 @@ from lerobot.common.robot_devices.robots.utils import Robot, make_robot_from_con
 from lerobot.common.utils.utils import has_method, init_logging, log_say
 
 
-RANDOM = True
+RANDOM = False
 
 cfg = ControlPipelineConfig(    
     robot=So100RobotConfig(),
     control=RecordControlConfig(
         fps=30,   
         single_task="Sim_Demo",   
-        repo_id='Tna001/so100_simulation2', 
+        repo_id='Tna001/so100_simulation3', 
         tags=["so100","simulation"],
-        warmup_time_s=0, episode_time_s=40, reset_time_s=0,
-        num_episodes=1, # Number of episodes to record
+        warmup_time_s=0, episode_time_s=55, reset_time_s=0,
+        num_episodes=80, # Number of episodes to record
         push_to_hub=False,
         local_files_only=True,
         policy=None,
@@ -80,8 +72,8 @@ from dm_control.viewer import user_input
 
 EPOCH = ccfg.num_episodes
 _XML = "so_arm100/scene.xml"
-max_vel = 4 * np.pi  
-max_acc = 8.0
+max_vel = 3 * np.pi  
+max_acc = 1*np.pi
 open_gripper = 0.3
 close_gripper = -0.0
 RENDER_WIDTH, RENDER_HEIGHT = 480, 640
@@ -194,7 +186,7 @@ def reset_scene():
         randomize_domain()
 
 
-    object_pos = np.random.uniform(low=[0.2, -0.1, 0.01], high=[0.3, 0.1, 0.01])
+    object_pos = np.random.uniform(low=[0.18, -0.12, 0.01], high=[0.20, -0.10, 0.01])
     data.qpos[object_qpos_id: object_qpos_id + 7] = np.concatenate([object_pos, [1, 0, 0, 0]])
     mujoco.mj_forward(model, data)
 
@@ -274,13 +266,16 @@ def randomize_domain():
 
 
 def run_epoch(object_pos, viewer,dataset,cfg,vel_prev,start_time):
-    place_pos = np.array([0.3, 0.0, 0.03])
+    place_pos = np.array([0.2, 0.2, 0.03])
     data.site_xpos[place_site_id] = place_pos
     grasp_height = 0.018
     lift_height = 0.15
     stage = "approach"
 
     while viewer.is_running() and not key_callback.exit:
+        if time.time() - start_time >= cfg.episode_time_s:
+            log_say("⏱️ Time reached. Finishing epoch.", cfg.play_sounds)
+            return
         mujoco.mj_forward(model, data)
         configuration.update(data.qpos)
         ee_T = configuration.get_transform_frame_to_world("gripper_site", "site")
@@ -399,13 +394,15 @@ def run_epoch(object_pos, viewer,dataset,cfg,vel_prev,start_time):
 
         # Dataset recording
 
-        state_arm = torch.as_tensor(state_, dtype=torch.float32)  # [5]
+        state_arm = torch.as_tensor(state_, dtype=torch.float32)                           # [5]
         jaw_state = torch.tensor([data.qpos[jaw_joint_id]], dtype=torch.float32)           # [1]
-        state = torch.cat([state_arm, jaw_state])                                          # [6]
+        state = torch.cat([state_arm, jaw_state])      
+        state = torch.rad2deg(state)                                                       # [6]
 
         action_arm = torch.as_tensor(data.ctrl[actuator_ids].copy(), dtype=torch.float32)  # [5]
         jaw_action = torch.tensor([data.ctrl[jaw_act_id]], dtype=torch.float32)            # [1]
-        action = torch.cat([action_arm, jaw_action])                                       # [6]
+        action = torch.cat([action_arm, jaw_action])   
+        action = torch.rad2deg(action)                                                     # [6]
         obs_dict, action_dict = {}, {}
         obs_dict["observation.state"]  = state
         action_dict["action"] = action

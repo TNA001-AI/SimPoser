@@ -58,7 +58,11 @@ if __name__ == "__main__":
     object_geom_id = model.geom("object_geom").id
     fixed_jaw_id = model.geom("fixed_jaw_pad_1").id
     moving_jaw_id = model.geom("moving_jaw_pad_1").id
-
+    for i in range(model.njnt):
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_JOINT, i)
+        qpos_idx = model.jnt_qposadr[i]
+        print(f"Joint {i}: name={name}, qpos_idx={qpos_idx}")
+        
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
