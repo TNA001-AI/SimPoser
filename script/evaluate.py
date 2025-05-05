@@ -31,13 +31,13 @@ from lerobot.common.datasets.lerobot_dataset import LeRobotDatasetMetadata
 
 from lerobot.common.utils.utils import has_method, init_logging, log_say
 
-
-RANDOM = False
-policy_path="/home/tao/lerobot/outputs/train/act_so100_test_sim2/checkpoints/last/pretrained_model"
+RECORD = 10
+RANDOM = True
+policy_path="/home/tao/lerobot/outputs/train/act_so100_test_sim3/checkpoints/last/pretrained_model"
 
 
 pre_cfg = PreTrainedConfig.from_pretrained(policy_path)
-print(pre_cfg)
+# print(pre_cfg)
 
 
 cfg = ControlPipelineConfig(    
@@ -45,10 +45,10 @@ cfg = ControlPipelineConfig(
     control=RecordControlConfig(
         fps=30,   
         single_task="Sim_Demo",   
-        repo_id='Tna001/eval_so100_simulation', 
+        repo_id='Tna001/eval_so100_simulation3', 
         tags=["so100","simulation"],
-        warmup_time_s=0, episode_time_s=40, reset_time_s=0,
-        num_episodes=1, # Number of episodes
+        warmup_time_s=0, episode_time_s=90, reset_time_s=0,
+        num_episodes=2, # Number of episodes
         push_to_hub=False,
         local_files_only=True,
         play_sounds=False, 
@@ -116,7 +116,7 @@ joint_names = [
     "Wrist_Pitch", "Wrist_Roll", "Jaw"
 ]
 actuator_ids = np.array([model.actuator(name).id for name in joint_names])
-print("actuator_ids:", actuator_ids)
+# print("actuator_ids:", actuator_ids)
 
 
 jaw_act_id = model.actuator("Jaw").id
@@ -136,10 +136,11 @@ def main(dataset: LeRobotDataset = dataset,cfg: RecordControlConfig = ccfg):
         show_left_ui=False,
         show_right_ui=False
     ) as viewer:
-        print("ds_meta:", dataset.meta)
-        print("ds_meta0:", dataset0.meta)
-        print("policy:", cfg.policy)
+        # print("ds_meta:", dataset.meta)
+        # print("ds_meta0:", dataset0.meta)
+        # print("policy:", cfg.policy)
         policy = make_policy(cfg.policy, cfg.device, ds_meta=dataset.meta)
+        time.sleep(RECORD)
         for epoch in range(EPOCH):  
             log_say(f"\n🚀 Recording episode {dataset.num_episodes}", cfg.play_sounds)
             object_pos = reset_scene()
@@ -234,7 +235,6 @@ def predict_action(observation, policy, device, use_amp=True):
 
         # Move to cpu, if not already the case
         action = action.to("cpu")
-        print("action:", action)
 
     return action
 def randomize_domain():

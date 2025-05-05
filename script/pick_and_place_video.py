@@ -14,7 +14,7 @@ import mink
 from dm_control.viewer import user_input
 
 RANDOM = True
-EPOCH = 2
+EPOCH = 10
 _XML = "so_arm100/scene.xml"
 open_gripper = 0.3
 close_gripper = -0.0
@@ -95,7 +95,7 @@ def main():
     with mujoco.viewer.launch_passive(
         model=model,
         data=data,
-        show_left_ui=True,
+        show_left_ui=False,
         show_right_ui=False,
         key_callback=key_callback,
     ) as viewer:
