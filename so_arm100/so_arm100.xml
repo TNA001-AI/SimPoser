@@ -33,7 +33,7 @@
     <default class="so_arm100">
       <joint frictionloss="0.1" armature="0.1"/>
       <!-- <position kp="50" dampratio="1" forcerange="-35 35" ctrlrange="-3.14158 3.14158"/> -->
-      <position kp="70" dampratio="1" forcerange="-35 35" ctrlrange="-3.14158 3.14158"/>
+      <position kp="120" dampratio="1.5" forcerange="-35 35" ctrlrange="-3.14158 3.14158"/>
 
       <default class="Rotation">
         <joint axis="0 1 0" range="-2.2 2.2"/>

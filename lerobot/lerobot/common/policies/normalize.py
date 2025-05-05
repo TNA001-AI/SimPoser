@@ -148,7 +148,7 @@ class Normalize(nn.Module):
                 continue
 
             buffer = getattr(self, "buffer_" + key.replace(".", "_"))
-
+            print(key)
             if norm_mode is NormalizationMode.MEAN_STD:
                 mean = buffer["mean"]
                 std = buffer["std"]

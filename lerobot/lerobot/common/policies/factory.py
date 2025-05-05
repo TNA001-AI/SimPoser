@@ -124,6 +124,7 @@ def make_policy(
         features = dataset_to_policy_features(ds_meta.features)
         kwargs["dataset_stats"] = ds_meta.stats
     else:
+        print("##############################")
         if not cfg.pretrained_path:
             logging.warning(
                 "You are instantiating a policy from scratch and its features are parsed from an environment "
