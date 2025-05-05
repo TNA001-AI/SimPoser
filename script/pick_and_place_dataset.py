@@ -22,14 +22,15 @@ from lerobot.common.robot_devices.robots.utils import Robot, make_robot_from_con
 from lerobot.common.utils.utils import has_method, init_logging, log_say
 
 
-RANDOM = False
+RANDOM = True
+ID = 'Tna001/so100_simulation3'
 
 cfg = ControlPipelineConfig(    
     robot=So100RobotConfig(),
     control=RecordControlConfig(
         fps=30,   
         single_task="Sim_Demo",   
-        repo_id='Tna001/so100_simulation3', 
+        repo_id=ID, 
         tags=["so100","simulation"],
         warmup_time_s=0, episode_time_s=55, reset_time_s=0,
         num_episodes=80, # Number of episodes to record
@@ -266,7 +267,7 @@ def randomize_domain():
 
 
 def run_epoch(object_pos, viewer,dataset,cfg,vel_prev,start_time):
-    place_pos = np.array([0.2, 0.2, 0.03])
+    place_pos = np.array([0.2, 0.1, 0.03])
     data.site_xpos[place_site_id] = place_pos
     grasp_height = 0.018
     lift_height = 0.15
