@@ -22,14 +22,14 @@ client = OpenAI()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 RANDOM = True
-EPOCH = 2
+EPOCH = 10
 _XML = "so_arm100/scene.xml"
 open_gripper = 0.3
 close_gripper = -0.0
 RENDER_WIDTH, RENDER_HEIGHT = 480, 640
 CAMERA_NAMES = ["top_view", "front_view", "main_cam"]
 FPS = 30
-rate = RateLimiter(frequency=FPS, warn=True)
+rate = RateLimiter(frequency=FPS, warn=False)
 dt = rate.period
 VIDEO_DIR = "recordings"
 os.makedirs(VIDEO_DIR, exist_ok=True)
@@ -373,13 +373,11 @@ def pose_controller(stage, context):
         temperature=0.2,
     )
     response = rsp.choices[0].message.content
-    print("\nresponse:", response)
     cleaned = re.sub(r"^```json\s*|\s*```$", "", response.strip())
-    print("\ncleaned:", cleaned)
     payload = json.loads(cleaned)
 
-    print(f"LLM prompt: system: {sys_prompt} \n user: {user_prompt}]")
-    print(f"LLM response: {response}")
+    # print(f"LLM prompt: system: {sys_prompt} \n user: {user_prompt}]")
+    # print(f"LLM response: {response}")
     print(f"LLM response: {cleaned}")
 
     return payload.get("params", {})
@@ -399,10 +397,10 @@ def stage_controller(stage, context, remaining):
                   {"role": "user", "content": user_prompt}],
         temperature=0.2,
     )
-    print(f"LLM prompt: system: {sys_prompt} \n user: {user_prompt}]")
+    # print(f"LLM prompt: system: {sys_prompt} \n user: {user_prompt}]")
     response = rsp.choices[0].message.content
     cleaned = re.sub(r"^```json\s*|\s*```$", "", response.strip())
-    print(f"LLM response: {response}")
+    # print(f"LLM response: {response}")
     print(f"LLM response: {cleaned}")
     payload = json.loads(cleaned)
 
@@ -436,12 +434,12 @@ def run_epoch(object_pos, writers,viewer):
 
         if finished is True:
             remaining.remove(stage)
-            stage = stage_controller(stage, context, remaining)
-            params = pose_controller(stage, data)
-            print(f"Remaining stages after remove {stage}:", remaining)
+            next_stage = stage_controller(stage, context, remaining)
+            params = pose_controller(next_stage, data)
+            print(f"Current stage is [{stage}]. The next stage to perform will be [{next_stage}] with parameter of {params}")
+            stage = next_stage
 
-        print(f"Current target: {target}")
-        # IK 控制流程
+        # Inverse kinematics
         T_goal = mink.SE3.from_matrix(np.vstack([
             np.hstack([rotation_matrix, target.reshape(3, 1)]),
             np.array([0, 0, 0, 1])
