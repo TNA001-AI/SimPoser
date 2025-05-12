@@ -27,14 +27,14 @@ from lerobot.common.robot_devices.robots.utils import Robot, make_robot_from_con
 from lerobot.common.utils.utils import has_method, init_logging, log_say
 
 
-RANDOM = False
+RANDOM = True
 
 cfg = ControlPipelineConfig(    
     robot=So100RobotConfig(),
     control=RecordControlConfig(
         fps=30,   
         single_task="Sim_Demo",   
-        repo_id='Tna001/so100_simulation3', 
+        repo_id='Tna001/so100_simulation4', 
         tags=["so100","simulation"],
         warmup_time_s=0, episode_time_s=55, reset_time_s=0,
         num_episodes=80, # Number of episodes to record
@@ -463,11 +463,12 @@ def stage_controller(stage, context, remaining):
 client = OpenAI()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-def run_epoch(object_pos, writers,viewer):
-    place_pos = np.array([0.3, 0.0, 0.03])
+def run_epoch(object_pos, viewer,dataset,cfg,vel_prev,start_time):
+    place_pos = np.array([0.2, 0.1, 0.03])
     data.site_xpos[place_site_id] = place_pos
     stage = "approach"
     remaining = stages_sequence.copy()
+    state_ = configuration.q[dof_ids].copy()
     params = {}
 
     while viewer.is_running() and not key_callback.exit and stage is not None:
@@ -493,38 +494,6 @@ def run_epoch(object_pos, writers,viewer):
 
         print(f"Current target: {target}")
         # IK 控制流程
-        T_goal = mink.SE3.from_matrix(np.vstack([
-            np.hstack([rotation_matrix, target.reshape(3, 1)]),
-            np.array([0, 0, 0, 1])
-        ]))
-        end_effector_task.set_target(T_goal)
-
-        for _ in range(1):
-            
-            vel = mink.solve_ik(configuration, [*tasks, damping_task], dt, "osqp", 1e-5)
-            # print("IK velocity:", vel)
-            configuration.integrate_inplace(vel, dt)
-            err = end_effector_task.compute_error(configuration)
-            # print("Position error:", np.linalg.norm(err[:3]), "Orientation error:", np.linalg.norm(err[3:]))
-            if np.linalg.norm(err[:3]) < 1e-5:
-                break
-
-        # 控制与视频录制
-        if not key_callback.pause:
-            data.ctrl[actuator_ids] = configuration.q[dof_ids]
-            mujoco.mj_step(model, data)
-            for name, cam in cameras.items():
-                renderer.update_scene(data, cam)
-                frame = renderer.render()
-                writers[name].append_data(frame)
-        else:
-            mujoco.mj_forward(model, data)
-
-        viewer.sync()
-        rate.sleep()
-        if key_callback.exit:
-                break
-
 
         T_goal = mink.SE3.from_matrix(np.vstack([
             np.hstack([rotation_matrix, target.reshape(3, 1)]),
